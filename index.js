@@ -1,6 +1,6 @@
 'use strict';
-import {spawn} from 'child_process';
-import { EventEmitter } from 'events';
+const spawn = require('child_process').spawn;
+const EventEmitter = require('events');
 
 // The permitted audio outputs, local means via the 3.5mm jack.
 const ALLOWED_OUTPUTS = ['hdmi', 'local', 'both', 'alsa'];

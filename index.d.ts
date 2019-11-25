@@ -1,8 +1,18 @@
-declare var createVideoPlayer: NodeOmxPlayerStatic;
+export declare const createVideoPlayer: NodeOmxPlayerStatic;
+export declare const AudioOutput: {
+  HDMI: 'hdmi',
+  jack: 'local',
+  both: 'both',
+  alsa: 'alsa'
+};
+export declare const VideoOutput: {
+  HDMI0: 2,
+  HDMI1: 7,
+  LCD: 4,
+};
 
-declare module 'omxplayer-node' {
-		export = createVideoPlayer
-}
+export default createVideoPlayer;
+
 
 interface PlayerParams {audio?: String, display?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, loop?: Boolean, initialVolume?: Number, osd?: Boolean}
 

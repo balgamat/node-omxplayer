@@ -1,6 +1,6 @@
 {
   "name": "omxplayer-node",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A library for controlling the Raspberry Pi omxplayer from Node.js. Supports multiple displays on RPi4",
   "keywords": [
     "omx",
