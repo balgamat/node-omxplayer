@@ -45,7 +45,7 @@ sudo apt-get install omxplayer
 ## API
 
 ### createVideoPlayer(params = {})
-*createVideoPlayer(globalParams: {audio?: AudioOutput, display?: VideoOutput, loop?: Boolean, initialVolume?: Number, osd?: Boolean}) => NodeOmxPlayerStatic*
+*createVideoPlayer(globalParams: {audio?: AudioOutput, display?: VideoOutput, loop?: Boolean, initialVolume?: Number, osd?: Boolean}) => NodeOmxPlayer*
 
 This will initialize the player with some global parameters, so you don't have to set them every time you want to
  play a file.
