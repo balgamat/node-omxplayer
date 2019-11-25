@@ -16,11 +16,11 @@ export default createVideoPlayer;
 
 interface PlayerParams {audio?: String, display?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, loop?: Boolean, initialVolume?: Number, osd?: Boolean}
 
-interface NodeOmxPlayerStatic {
+export declare interface NodeOmxPlayerStatic {
 	(globalParams: PlayerParams): NodeOmxPlayer;
 }
 
-interface NodeOmxPlayer extends Event {
+export declare interface NodeOmxPlayer extends Event {
 	open(params: {source: String} & PlayerParams): void;
 
 	/**
