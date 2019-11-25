@@ -1,90 +1,44 @@
 'use strict';
-
-// ----- Requires ----- //
-
-let spawn = require('child_process').spawn;
-let EventEmitter = require('events');
-
-
-// ----- Setup ----- //
+import {spawn} from 'child_process';
+import { EventEmitter } from 'events';
 
 // The permitted audio outputs, local means via the 3.5mm jack.
-let ALLOWED_OUTPUTS = ['hdmi', 'local', 'both', 'alsa'];
+const ALLOWED_OUTPUTS = ['hdmi', 'local', 'both', 'alsa'];
 
+export const AudioOutput = {
+	HDMI: 'hdmi',
+	jack: 'local',
+	both: 'both',
+	alsa: 'alsa'
+};
 
-// ----- Functions ----- //
+export const VideoOutput = {
+	HDMI0: 2,
+	HDMI1: 7,
+	LCD: 4,
+};
 
-// Creates an array of arguments to pass to omxplayer.
-function buildArgs (source, givenOutput, loop, initialVolume, showOsd) {
-	let output = '';
-
-	if (givenOutput) {
-
-		if (ALLOWED_OUTPUTS.indexOf(givenOutput) === -1) {
-			throw new Error(`Output ${givenOutput} not allowed.`);
-		}
-
-		output = givenOutput;
-
-	} else {
-		output = 'local';
-	}
-
-	let osd = false;
-	if (showOsd) {
-		osd = showOsd;
-	}
-
-	let args = [source, '-o', output, '--blank', osd ? '' : '--no-osd'];
-
-	// Handle the loop argument, if provided
-	if (loop) {
-		args.push('--loop');
-	}
-
-	// Handle the initial volume argument, if provided
-	if (Number.isInteger(initialVolume)) {
-		args.push('--vol', initialVolume);
-	}
-
-	return args;
-
-}
-
-
-// ----- Omx Class ----- //
-
-function Omx (source, output, loop, initialVolume, showOsd) {
-
+const createVideoPlayer = (globalParams = {}) =>{
 	// ----- Local Vars ----- //
-
-	let omxplayer = new EventEmitter();
+	const omxplayer = new EventEmitter();
 	let player = null;
 	let open = false;
 
 	// ----- Local Functions ----- //
-
 	// Marks player as closed.
-	function updateStatus () {
-
+	const updateStatus = () => {
 		open = false;
 		omxplayer.emit('close');
-
-	}
-
+	};
 	// Emits an error event, with a given message.
-	function emitError (message) {
-
+	const emitError = (message) => {
 		open = false;
 		omxplayer.emit('error', message);
-
-	}
-
+	};
 	// Spawns the omxplayer process.
-	function spawnPlayer (src, out, loop, initialVolume, showOsd) {
-
-		let args = buildArgs(src, out, loop, initialVolume, showOsd);
-		console.log('args for omxplayer:', args);
+	const spawnPlayer = params => {
+		let args = buildArgs({...globalParams, ...params});
+		process.env.NODE_ENV === 'development' && console.log('args for omxplayer:', args);
 		let omxProcess = spawn('omxplayer', args);
 		open = true;
 
@@ -96,45 +50,27 @@ function Omx (source, output, loop, initialVolume, showOsd) {
 		});
 
 		return omxProcess;
-
-	}
-
+	};
 	// Simulates keypress to provide control.
-	function writeStdin (value) {
-
+	const writeStdin = value => {
 		if (open) {
 			player.stdin.write(value);
 		} else {
 			throw new Error('Player is closed.');
 		}
-
-	}
-
-	// ----- Setup ----- //
-
-	if (source) {
-		player = spawnPlayer(source, output, loop, initialVolume, showOsd);
-	}
-
-	// ----- Methods ----- //
-
-	// Restarts omxplayer with a new source.
-	omxplayer.newSource = (src, out, loop, initialVolume, showOsd) => {
-
-		if (open) {
-
-			player.on('close', () => { player = spawnPlayer(src, out, loop, initialVolume, showOsd); });
-			player.removeListener('close', updateStatus);
-			writeStdin('q');
-
-		} else {
-
-			player = spawnPlayer(src, out, loop, initialVolume, showOsd);
-
-		}
-
 	};
 
+	// ----- Methods ----- //
+	// Open a video file and set params
+	omxplayer.open = params => {
+		if (open) {
+			player.on('close', () => { player = spawnPlayer(params); });
+			player.removeListener('close', updateStatus);
+			writeStdin('q');
+		} else {
+			player = spawnPlayer(params);
+		}
+	};
 	omxplayer.play = () => { writeStdin('p'); };
 	omxplayer.pause = () => { writeStdin('p'); };
 	omxplayer.volUp = () => { writeStdin('+'); };
@@ -163,13 +99,32 @@ function Omx (source, output, loop, initialVolume, showOsd) {
 		get: () => { return open; }
 	});
 
-	// ----- Return Object ----- //
-
 	return omxplayer;
+};
 
-}
+// Creates an array of arguments to pass to omxplayer's cli
+const buildArgs  = ({source, audio = 'local', display, loop = false, initialVolume, osd = false}) => {
 
+	if (audio) {
+		if (ALLOWED_OUTPUTS.indexOf(audio) === -1) {
+			throw new Error(`Output ${audio} not allowed.`);
+		}
+	}
 
-// ----- Module Exports ----- //
+	let args = [source, '-o', audio, '--blank', display ? `--display ${display}` : '', osd ? '' : '--no-osd'];
 
-module.exports = Omx;
+	// Handle the loop argument, if provided
+	if (loop) {
+		args.push('--loop');
+	}
+
+	// Handle the initial volume argument, if provided
+	if (Number.isInteger(initialVolume)) {
+		args.push('--vol', initialVolume);
+	}
+
+	return args;
+
+};
+
+export default createVideoPlayer;

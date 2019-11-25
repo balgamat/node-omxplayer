@@ -1,15 +1,26 @@
 # Node-Omxplayer
 
-A library for controlling the Raspberry Pi [omxplayer](https://github.com/popcornmix/omxplayer) from Node.js.
+A library for controlling the Raspberry Pi [omxplayer](https://github.com/popcornmix/omxplayer) from Node.js, now
+ also supporting multiple displays, yay!
 
 ## Get Started
 
 ```js
 // Import the module.
-var Omx = require('node-omxplayer');
+import createVideoPlayer, {AudioOutput, VideoOutput} from "./index";
 
-// Create an instance of the player with the source.
-var player = Omx('my-video.mp4');
+// Create an instance of the player with some global params set
+const videoPlayer = createVideoPlayer({
+    display: VideoOutput.HDMI0,
+    audio: AudioOutput.jack,
+});
+
+// Open a file and set s'more params (these take precedency over the global ones)
+videoPlayer.open({
+    source: 'test.mp4',
+    audio: AudioOutput.HDMI,
+    osd: true
+});
 
 // Control video/audio playback.
 player.pause();
@@ -33,26 +44,43 @@ sudo apt-get install omxplayer
 
 ## API
 
-### Omx(*[source]*, *[output]*, *[loop]*, *[initialVolume]*)
+### createVideoPlayer(params = {})
+*createVideoPlayer(globalParams: {audio?: AudioOutput, display?: VideoOutput, loop?: Boolean, initialVolume
+?: Number, osd?: Boolean}) => NodeOmxPlayerStatic*
 
-The constructor method, used to launch omxplayer with a source.
-
-- `source` (optional): The playback source, any audio or video file (or stream) that omxplayer is capable of playing. If left blank, the player will initialise and wait for a source to be added later with the `newSource` method.
-
-- `output` (optional): The audio output, if left blank will default to 'local', can be one of:
-    + local - the analog output (3.5mm jack).
-    + hdmi - the HDMI port audio output.
-    + both - both of the above outputs.
+This will initialize the player with some global parameters, so you don't have to set them every time you want to
+ play a file.
+ 
+- `audio` (optional): The audio output, if left blank will default to AudioOutput.jack, can be one of:
+    + `AudioOutput.jack` - the analog output (3.5mm jack)
+    + `AudioOutput.HDMI` - the HDMI port audio output
+    + `AudioOutput.both` - both of the above outputs
+    + `AudioOutput.alsa` - use Alsa settings
+    
+- `display` (optional): The video output, if left blank will default to primary display, can be one of:
+    + `AudioOutput.HDMI0` - the first HDMI port
+    + `AudioOutput.HDMI1` - the second HDMI port
+    + `AudioOutput.LCD` - the 7" LCD panel for RPi
     
 - `loop` (optional): Loop state, if set to true, will loop file if it is seekable. If left blank will default to false.
 
-    **Warning**: As stated above, if you quit node before quitting the player, a zombie process may be created. If this occurs when the loop option is in place, the `omxplayer` process may run indefinitely.
+    **Warning**: As stated above, if you quit node before quitting the player, a zombie process may be created. 
+    If this occurs when the loop option is in place, the `omxplayer` process may run indefinitely.
 
 - `initialVolume` (optional): The initial volume, omxplayer will start with this value (in millibels). If left blank will default to 0.
 
-### player.newSource(*source*, *[output]*, *[loop]*, *[initialVolume]*)
+- `osd` (optional): Whether to show OSD on top. Defaults to false.
 
-Starts playback of a new source, the arguments are identical to those of the `Omx` constructor method described above. If a file is currently playing, ends this playback and begins the new source.
+**After getting the player object like so: `const player = createVideoPlayer(params)`, use the methods below to control
+ the playback:**
+
+### player.open(params)
+*player.open(params: {source: string, audio?: AudioOutput, display?:VideoOutput, loop?: Boolean, initialVolume?: Number
+, osd?: Boolean})*
+
+Starts playback of a new source, the arguments are identical to those of the `createVideoPlayer` function
+ described above with addition of the required `source` parameter. If a file is currently playing, ends this playback
+  and begins playing the new source.
 
 ### player.play()
 
@@ -164,8 +192,10 @@ Occurs when there is a problem with omxplayer. Includes a message with more info
 
 ### 'Output <foo> not allowed.'
 
-Incorrect audio output type passed to the player, see `Omx` in the API section above. Can occur for the `Omx` constructor and the `newSource` method.
+Incorrect audio output type passed to the player, see `createVideoPlayer` in the API section above. Can occur when
+ creating the player or using the `player.open` method.
 
 ### 'Player is closed.'
 
-An attempt has been made to send a command to the player after it has closed. Prevent this from happening by checking if it is still running using the `running` getter method. Can occur for any of the player methods except `newSource`.
+An attempt has been made to send a command to the player after it has closed. Prevent this from happening by checking
+ if it is still running using the `running` getter method. Can occur for any of the player methods except `open`.
