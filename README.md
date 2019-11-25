@@ -1,4 +1,4 @@
-# Node-Omxplayer
+# omxplayer-node
 
 A library for controlling the Raspberry Pi [omxplayer](https://github.com/popcornmix/omxplayer) from Node.js, now
  also supporting multiple displays, yay!
@@ -33,7 +33,7 @@ player.quit();
 ## Installation
 
 ```
-npm install node-omxplayer
+npm install omxplayer-node
 ```
 
 This module does not require any third party Node.js libraries, but does rely on omxplayer being installed. On the default version of Raspbian it is installed by default, but on the Lite version you will have to install it:
