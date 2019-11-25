@@ -7,7 +7,7 @@ A library for controlling the Raspberry Pi [omxplayer](https://github.com/popcor
 
 ```js
 // Import the module.
-import createVideoPlayer, {AudioOutput, VideoOutput} from "./index";
+import createVideoPlayer, { AudioOutput, VideoOutput } from 'omxplayer-node';
 
 // Create an instance of the player with some global params set
 const videoPlayer = createVideoPlayer({
