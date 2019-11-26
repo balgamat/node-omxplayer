@@ -5,14 +5,14 @@ const EventEmitter = require('events');
 // The permitted audio outputs, local means via the 3.5mm jack.
 const ALLOWED_OUTPUTS = ['hdmi', 'local', 'both', 'alsa'];
 
-export const AudioOutput = {
+exports.AudioOutput = {
 	HDMI: 'hdmi',
 	jack: 'local',
 	both: 'both',
 	alsa: 'alsa'
 };
 
-export const VideoOutput = {
+exports.VideoOutput = {
 	HDMI0: 2,
 	HDMI1: 7,
 	LCD: 4,
@@ -103,7 +103,7 @@ const createVideoPlayer = (globalParams = {}) =>{
 };
 
 // Creates an array of arguments to pass to omxplayer's cli
-const buildArgs  = ({source, audio = 'local', display, loop = false, initialVolume, osd = false}) => {
+const buildArgs  = ({source, audio = 'local', display = 2, loop = false, initialVolume, osd = false}) => {
 
 	if (audio) {
 		if (ALLOWED_OUTPUTS.indexOf(audio) === -1) {
@@ -111,7 +111,7 @@ const buildArgs  = ({source, audio = 'local', display, loop = false, initialVolu
 		}
 	}
 
-	let args = [source, '-o', audio, '--blank', display ? `--display ${display}` : '', osd ? '' : '--no-osd'];
+	let args = [source, '-o', audio, '--blank', '--display', display, osd ? '' : '--no-osd'];
 
 	// Handle the loop argument, if provided
 	if (loop) {
@@ -127,4 +127,4 @@ const buildArgs  = ({source, audio = 'local', display, loop = false, initialVolu
 
 };
 
-export default createVideoPlayer;
+module.exports = createVideoPlayer;
